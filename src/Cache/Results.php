@@ -145,6 +145,7 @@ class Results extends Query {
 		// Reset the cached is_object_cache_enabled value for each new request
 		// This ensures we re-evaluate based on the current request's auth state
 		$this->is_object_cache_enabled = null;
+		$this->is_cached = [];
 
 		// if caching is not enabled or the request is authenticated, bail early
 		// right now we're not supporting GraphQL cache for authenticated requests.
@@ -200,9 +201,32 @@ class Results extends Query {
 			return null;
 		}
 
+		// Recover immediately from failures stored by older plugin versions.
+		if ( ! $this->is_successful_response( $result ) ) {
+			$this->delete( $key );
+			return null;
+		}
+
 		$this->is_cached[ $key ] = true;
 
 		return $result;
+	}
+
+	/**
+	 * Partial results with errors must be retried, not retained as healthy data.
+	 *
+	 * @param mixed $response GraphQL execution result or its serialized array.
+	 * @return bool
+	 */
+	protected function is_successful_response( $response ) {
+		if ( is_object( $response ) && method_exists( $response, 'toArray' ) ) {
+			$response = $response->toArray();
+		}
+
+		return is_array( $response )
+			&& empty( $response['errors'] )
+			&& array_key_exists( 'data', $response )
+			&& null !== $response['data'];
 	}
 
 	/**
@@ -292,6 +316,11 @@ class Results extends Query {
 
 		$key = $this->the_results_key( $query_id, $query, $variables, $operation_name );
 		if ( ! $key ) {
+			return;
+		}
+
+		if ( ! $this->is_successful_response( $filtered_response ) ) {
+			$this->delete( $key );
 			return;
 		}
 
