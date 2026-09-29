@@ -2,6 +2,8 @@
 
 # WPGraphQL Smart Cache
 
+The `codex/smart-cache-modernization` branch is an unreleased, owned 2.3.2.1 candidate derived from the official 2.3.2 distribution with the existing error-cache recovery patch. See [candidate provenance](docs/owned-2.3.2.1-provenance.md) before packaging or testing it.
+
 Do you want your API data _fast_ or _accurate_? With WPGraphQL Smart Cache, you can have both.
 
 WPGraphQL Smart Cache is a free, open-source WordPress plugin that provides support for caching and cache invalidation of WPGraphQL Queries.
