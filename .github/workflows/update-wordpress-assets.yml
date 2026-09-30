@@ -20,9 +20,9 @@ jobs:
           extensions: mbstring, intl
           tools: composer
       
-      - name: Install PHP dependencies
+      - name: Verify imported distribution bundle
         run: |
-          composer install --no-dev --optimize-autoloader
+          composer run-script verify-bundle
 
       - name: WordPress.org plugin asset/readme update
         uses: 10up/action-wordpress-plugin-asset-update@stable

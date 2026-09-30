@@ -4,16 +4,23 @@
  * Verify the result nodes are saved to the collection map memory/transients.
  */
 class BatchQueryCest {
+	protected $query_alias;
 	public function _before( FunctionalTester $I ) {
 		// Create/save persisted query for the query and query id
-		// The uniqid manes it's different between test runs, in case something fails and is stuck in database.
-		$this->query_alias = uniqid( "savedquery_posts_" );
-		$query_string = sprintf( "query %s { posts { nodes { id title } } }", $this->query_alias );
+		// The uniqid means it's different between test runs, in case something fails and is stuck in database.
+		$operation_name = uniqid( "savedquery_posts_" );
+		$query_string = sprintf( "query %s { posts { nodes { id title } } }", $operation_name );
+		$this->query_alias = hash( 'sha256', $query_string );
 
 		$I->sendPost('graphql', [
 			'query' => $query_string,
 			'queryId' =>$this->query_alias
 		] );
+
+		$I->dontSeeResponseJsonMatchesJsonPath( '$.errors' );
+		$registration = json_decode( $I->grabResponse(), true );
+		$I->assertIsArray( $registration['data']['posts']['nodes'] );
+		$I->seeTermInDatabase( [ 'name' => $this->query_alias ] );
 
 		// Create a published post for our queries
 		$I->havePostInDatabase( [
@@ -42,7 +49,7 @@ class BatchQueryCest {
 
 	public function testBatchQueryIsCached( FunctionalTester $I ) {
 		// Test saved/persisted query.
-		$query_string = sprintf( "query %s { posts { nodes { uri id databaseId } } }", $this->query_alias );
+		$query_string = sprintf( "query Unregistered_%s { posts { nodes { uri id databaseId } } }", $this->query_alias );
 
 		// Initial queries should not come from cache.
 		// Use individual queries here as an example that they are the same as when batched.

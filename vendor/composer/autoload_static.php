@@ -4,25 +4,25 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbda963e63dc7a9859951e905c5e45612
+class ComposerStaticInit650da228d07840dd347793581aca8595
 {
     public static $prefixLengthsPsr4 = array (
-        'W' => 
+        'W' =>
         array (
             'WPGraphQL\\SmartCache\\' => 21,
         ),
-        'A' => 
+        'A' =>
         array (
             'Appsero\\' => 8,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'WPGraphQL\\SmartCache\\' => 
+        'WPGraphQL\\SmartCache\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Appsero\\' => 
+        'Appsero\\' =>
         array (
             0 => __DIR__ . '/..' . '/appsero/client/src',
         ),
@@ -41,7 +41,9 @@ class ComposerStaticInitbda963e63dc7a9859951e905c5e45612
         'WPGraphQL\\SmartCache\\Cache\\Query' => __DIR__ . '/../..' . '/src/Cache/Query.php',
         'WPGraphQL\\SmartCache\\Cache\\Results' => __DIR__ . '/../..' . '/src/Cache/Results.php',
         'WPGraphQL\\SmartCache\\Document' => __DIR__ . '/../..' . '/src/Document.php',
+        'WPGraphQL\\SmartCache\\Document\\Audit' => __DIR__ . '/../..' . '/src/Document/Audit.php',
         'WPGraphQL\\SmartCache\\Document\\Description' => __DIR__ . '/../..' . '/src/Document/Description.php',
+        'WPGraphQL\\SmartCache\\Document\\DocumentsCommand' => __DIR__ . '/../..' . '/src/Document/DocumentsCommand.php',
         'WPGraphQL\\SmartCache\\Document\\GarbageCollection' => __DIR__ . '/../..' . '/src/Document/GarbageCollection.php',
         'WPGraphQL\\SmartCache\\Document\\Grant' => __DIR__ . '/../..' . '/src/Document/Grant.php',
         'WPGraphQL\\SmartCache\\Document\\Group' => __DIR__ . '/../..' . '/src/Document/Group.php',
@@ -57,9 +59,9 @@ class ComposerStaticInitbda963e63dc7a9859951e905c5e45612
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbda963e63dc7a9859951e905c5e45612::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbda963e63dc7a9859951e905c5e45612::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitbda963e63dc7a9859951e905c5e45612::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit650da228d07840dd347793581aca8595::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit650da228d07840dd347793581aca8595::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit650da228d07840dd347793581aca8595::$classMap;
 
         }, null, ClassLoader::class);
     }

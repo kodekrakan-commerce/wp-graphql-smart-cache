@@ -12,3 +12,5 @@ wp-cli.local.yml
 *.tar.gz
 *.zip
 .idea
+
+/plugin-build/

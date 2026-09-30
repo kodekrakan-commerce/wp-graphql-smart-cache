@@ -64,7 +64,7 @@ class Results extends Query {
 		// Use the viewer from AppContext, which is set at Request creation
 		// and doesn't change even if wp_set_current_user(0) is called later
 		if ( $this->request && $this->request->app_context->viewer->exists() ) {
-			$headers['Cache-Control'] = 'no-store';
+			$headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0';
 		}
 
 		return $headers;
@@ -145,7 +145,7 @@ class Results extends Query {
 		// Reset the cached is_object_cache_enabled value for each new request
 		// This ensures we re-evaluate based on the current request's auth state
 		$this->is_object_cache_enabled = null;
-		$this->is_cached = [];
+		$this->is_cached               = [];
 
 		// if caching is not enabled or the request is authenticated, bail early
 		// right now we're not supporting GraphQL cache for authenticated requests.
