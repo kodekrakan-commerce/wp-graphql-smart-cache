@@ -48,6 +48,9 @@ services:
     environment:
       WP_URL: http://localhost
       USING_XDEBUG: ${USING_XDEBUG:-}
+      # Frozen QA path: optional upstream coverage/cleanup can mutate dependencies.
+      COVERAGE: ''
+      SKIP_TESTS_CLEANUP: '1'
 
   testing_db:
     image: mariadb:10.11

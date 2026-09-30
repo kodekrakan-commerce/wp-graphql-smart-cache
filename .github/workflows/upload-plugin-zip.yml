@@ -13,9 +13,9 @@ jobs:
         with:
           php-version: 8.2
           tools: composer
-      - name: Install PHP dependencies
+      - name: Verify imported distribution bundle
         run: |
-          composer install --no-dev --optimize-autoloader
+          composer run-script verify-bundle
       - name: Create Artifact
         # Create a zip file similar to 10up/action-wordpress-plugin-deploy action
         run: |

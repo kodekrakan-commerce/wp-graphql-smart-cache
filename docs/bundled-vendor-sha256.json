@@ -1,0 +1,19 @@
+{
+    "vendor/appsero/client/.php-cs-fixer.dist.php": "a7b8f542f14c79d8fe64b972fd3dc25b299d6f0a5294f96dca7d42957660f7d3",
+    "vendor/appsero/client/readme.md": "50a2c300152a91be32d7a78498ee92c18b9107dfe53415eafbe081d55fbd6ccd",
+    "vendor/appsero/client/src/Client.php": "a8bfc8f75ad8cfdc37908657632ee20821c6fc6e03c2229495c52372a8502ed3",
+    "vendor/appsero/client/src/Insights.php": "5f951deed412641851ff1b4804ad235ee31d97d0021057bac8594dff2f6342fa",
+    "vendor/appsero/client/src/License.php": "608c5bd17ca13a2aef2f08d42711e966121eadc868cc3006089c1ccb813f7c00",
+    "vendor/autoload.php": "4bd9ee1683d9f06afa544f22a113121fccf781301661e42c6f3be3fd97b4eff1",
+    "vendor/composer/ClassLoader.php": "d4b2313e562edf942838ec316d983c1a3459ca67da3e5658e861200b0b3693c2",
+    "vendor/composer/InstalledVersions.php": "1e4525198301d1ed1f87ac3df2a8555a6f139f8df30a703d0b775a61963c96e4",
+    "vendor/composer/LICENSE": "c8cce4b6b9729f264ffdf9296d505d63432497feeed1f586d1902b942197e024",
+    "vendor/composer/autoload_classmap.php": "004820401ccb56507d32fcb77567e9cc6dd85736cd62174ead906f641acf5d85",
+    "vendor/composer/autoload_namespaces.php": "ede505407590638a435137f4e060136f1008de79fc169b3de9793423b0cea38c",
+    "vendor/composer/autoload_psr4.php": "8bb8edd8fbead42c9de3e4e0a3da08e192dee387c6883b30d664f070c2f9e8f4",
+    "vendor/composer/autoload_real.php": "6e4a10c7043930a777aa1a85c716c0f982516f8620347abc66580e577a441ad9",
+    "vendor/composer/autoload_static.php": "9cf77cffe251adc7bd9940a0cf1078015751af5357de39e380149d4197037837",
+    "vendor/composer/installed.json": "0afd311772d9138f2e09f5c45793df8e9d00947fa72bc7243c08b4491a461ae3",
+    "vendor/composer/installed.php": "2845eeaa2a9a3091eb2eb92e3a485bee34c00b3c52fc658e569ace7d279ef31a",
+    "vendor/composer/platform_check.php": "721825adf5558a573e29745d6d8e5086914b31856a9ef556487e4f5c2bc13551"
+}

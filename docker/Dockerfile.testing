@@ -12,3 +12,7 @@ COPY docker/app.setup.sh /usr/local/bin/app-setup.sh
 ENV PROJECT_DIR="${PLUGINS_DIR}/wp-graphql-smart-cache"
 
 RUN echo "pcov.directory = /var/www/html/wp-content/plugins/wp-graphql-smart-cache" >> /usr/local/etc/php/conf.d/docker-php-ext-pcov.ini
+
+# Own the test runner so the inherited unconditional Composer update cannot run.
+COPY docker/testing-entrypoint.sh /usr/local/bin/testing-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/testing-entrypoint.sh"]

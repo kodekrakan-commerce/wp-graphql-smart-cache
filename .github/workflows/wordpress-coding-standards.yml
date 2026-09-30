@@ -40,7 +40,7 @@ jobs:
           restore-keys: php-${{ matrix.php }}-${{ runner.os }}-composer
 
       - name: Install dependencies
-        run: |
-          composer update
+        run: bin/prepare-qa.sh "${{ runner.temp }}/wpgraphql-smart-cache-qa"
       - name: Run PHP_CodeSniffer
+        working-directory: ${{ runner.temp }}/wpgraphql-smart-cache-qa
         run: composer run-script check-cs

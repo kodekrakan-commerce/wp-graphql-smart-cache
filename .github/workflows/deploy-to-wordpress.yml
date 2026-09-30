@@ -21,9 +21,9 @@ jobs:
       - name: Install Subversion
         run: sudo apt-get update && sudo apt-get install -y subversion
 
-      - name: Install PHP dependencies
+      - name: Verify imported distribution bundle
         run: |
-          composer install --no-dev --optimize-autoloader
+          composer run-script verify-bundle
 
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
