@@ -5,6 +5,9 @@ use WPGraphQL\SmartCache\Cache\Query;
 use WPGraphQL\SmartCache\Cache\Results;
 use WPGraphQL\SmartCache\Storage\Ephemeral;
 
+// Exercise cache recovery independently of the site's default-disabled setting.
+// This filter and the ephemeral entries last only for this CLI process.
+add_filter('wpgraphql_cache_wordpress_cache_enabled', '__return_true');
 Query::$storage = new Ephemeral('isolated_error_cache_test');
 $calls = 0;
 add_action('graphql_register_types', function () use (&$calls) {
