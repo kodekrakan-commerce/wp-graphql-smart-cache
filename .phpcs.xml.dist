@@ -83,6 +83,11 @@
 
 	<!-- Load WordPress Coding standards -->
 	<rule ref="WordPress">
+		<!-- WPCS 2.x has no fixed release for GHSA-3pwp-g2mj-5p3v.
+		     Upstream workaround: disable only this source-evaluating sniff until
+		     the WPCS/VIP standards major upgrade is qualified.
+		     https://github.com/WordPress/WordPress-Coding-Standards/security/advisories/GHSA-3pwp-g2mj-5p3v -->
+		<exclude name="WordPress.WP.EnqueuedResourceParameters"/>
 		<exclude name="WordPress.NamingConventions.ValidVariableName"/>
 		<exclude name="WordPress.Files.FileName"/>
 

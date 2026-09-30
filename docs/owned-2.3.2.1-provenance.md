@@ -61,3 +61,49 @@ Local isolated QA (PHP 8.4.11, Composer 2.8.10, the reviewed lock) passes PHPSta
 The parent subsequently verified 14 persisted-document checks through sealed local WordPress HTTP/WP-CLI: exact hash registration/replay, expected mismatch/collision rejection, audit/dry-run behavior, automatic-document purge, fallback/re-registration, and preservation of granted/denied/grouped documents. Representative legacy shapes were created on the candidate; the report explicitly records `legacy_migration_verified: false`. This establishes those candidate contracts, not an actual prior-version persisted-document database migration. Rejections thrown in the request filter produce HTTP 500 through the current core transport; the harness accepts only the exact expected mismatch/collision error categories, while successful data still requires HTTP 200.
 
 The parent also passed a qualified snapshot rollback rehearsal: baseline WPGraphQL 2.9.1 / Smart Cache 2.0.1 booted, then candidate plugin versions, 43,890 file hashes, measured synthetic database state and stock/session values were restored exactly. All 29 connected candidate assertions passed again after restoration, and the native PHP 8.2 cache recovery regression passed again. These are reduced synthetic-fixture checks; production/provider parity, actual release/install rollback and the changed Linux QA scenarios remain separate gates. Private evidence is recorded in `b1-persisted-documents-bb4d1084-68a6-4cda-886a-a806864e8e85.json`, `b1-rollback-rehearsal.json` and `b1-connected-after-rollback.json` under the modernization evidence directory.
+
+## Bounded QA advisory remediation — 2026-09-30
+
+The parent subsequently verified that owning source `699c2cfc8782275c50964cb267c1ac9e728f0eb8` passed all six WordPress/PHP 8.2 CI jobs (229 tests, 8,038 assertions and one pre-existing incomplete test per job), PHPStan and PHPCS. That result qualifies the preceding source and lock; the following dependency candidate requires a new PHP 8.2 CI run.
+
+The baseline Composer audit reports 29 advisories across nine QA-only packages. None appears in the 17-file released Appsero bundle. An isolated manifest copy models the QA target as `config.platform.php = 8.2.34`; this configuration is copied into the owning QA manifest so the generated lock and content hash remain consistent. It constrains QA resolution, does not change the plugin's runtime PHP requirements, and does not substitute for running the tools and integration tests on PHP 8.2. All 137 locked packages that declare a PHP requirement accept 8.2.34 in a separate metadata check.
+
+The parent reviewed and accepted the dry run for `composer update guzzlehttp/guzzle:7.15.2 guzzlehttp/psr7:2.13.0 guzzlehttp/promises:2.5.1 phpunit/phpunit:9.6.33 sebastian/comparator:4.0.10 squizlabs/php_codesniffer:3.13.6 symfony/dom-crawler:5.4.52 symfony/process:7.4.5 symfony/yaml:5.4.52 --no-install --no-scripts --no-plugins --dry-run`. The identical command without `--dry-run` generated the private candidate lock before copying it into the owning checkout. Package-record comparison confirms exactly nine updates, zero additions/removals and all other locked records unchanged:
+
+| QA package | Before | Candidate |
+| --- | --- | --- |
+| guzzlehttp/guzzle | 7.10.0 | 7.15.2 |
+| guzzlehttp/psr7 | 2.8.0 | 2.13.0 |
+| guzzlehttp/promises | 2.3.0 | 2.5.1 |
+| phpunit/phpunit | 9.6.31 | 9.6.33 |
+| sebastian/comparator | 4.0.9 | 4.0.10 |
+| squizlabs/php_codesniffer | 3.13.5 | 3.13.6 |
+| symfony/dom-crawler | 5.4.48 | 5.4.52 |
+| symfony/process | 7.4.0 | 7.4.5 |
+| symfony/yaml | 5.4.45 | 5.4.52 |
+
+Guzzle Promises and Sebastian Comparator are necessary locked peers. All candidates are stable releases within their existing majors; the Guzzle packages require minor advances, while the other targets stay within their existing minor branches. Runtime Appsero, WPGraphQL, Relay and GraphQL PHP records are unchanged. Candidate lock SHA-256 is `80acdd35737ce457231cbd54c46559233ca5ccbeacee13dd45725bcc92c9aefb`. No broad update, dependency-unlocking flag, ignored platform requirement, manual lock edit or owning-tree Composer install was used.
+
+The candidate audit reduces the count to nine advisories: eight in the preserved Composer 2.7.7 QA library and one in WPCS 2.3.0. [Composer 2.10.3](https://github.com/composer/composer/releases/tag/2.10.3) fixes the eight but requires JSON Schema 6, conflicting with REST module 1.4.2's JSON Schema 5 constraint. A REST upgrade supporting Schema 6 also requires a Codeception major migration beyond the reviewed scope. [Composer 2.2.30 LTS](https://github.com/composer/composer/releases/tag/2.2.30) is a supported patched alternative compatible with PHP 8.2 and Schema 5, but conflicts with locked Symfony 7.4, PCRE 3 and Promise 3 peers; its isolated one-package dry run failed. The [official maintenance policy](https://getcomposer.org/download/) guarantees critical LTS security fixes through at least December 31, 2026 and recommends current Composer for PHP 7.2+. Neither alternative is a drop-in fix for this lock. The installed Composer library is reached through WP-CLI's package command; normal frozen CI does not install WP-CLI packages, but malicious package/Perforce inputs or affected logging paths remain a QA tooling risk. The local Composer executable 2.8.10 is separate from the locked library.
+
+[WPCS advisory GHSA-3pwp-g2mj-5p3v / CVE-2026-45293](https://github.com/WordPress/WordPress-Coding-Standards/security/advisories/GHSA-3pwp-g2mj-5p3v) affects versions `>=0.14.1,<3.4.1`; no patched 2.x release is available. Fixed 3.4.1 conflicts with the root and VIPWPCS 2.3.4 constraints. The enabled `WordPress.WP.EnqueuedResourceParameters` sniff evaluates scanned source, making PR lint a relevant path. Upstream supports excluding that single sniff. Private rule enumeration confirms this proposed exclusion removes exactly one of 293 enabled sniffs and preserves the other 292, including the rest of the quality gate. **At this pre-workaround checkpoint, no exclusion was active in the owning configuration**; a standards migration or this narrow mitigation requires separate review.
+
+Fresh installation of the candidate lock succeeded only in a new private QA copy. Local PHP 8.4.11 checks pass PHPStan for 22 files, PHPCS for 11 files, Codeception 4.2.2 startup and actor generation, actual local platform requirements, manifest/lock validation and the owning 17-file bundle verification. Existing QA tools emit PHP 8.4 deprecations. These checks do not claim candidate integration execution on PHP 8.2, exhaustive stable-version compatibility, or full store migration. The exact audit IDs/ranges, primary package metadata, accepted dry run, blockers, lock comparison, mitigation capability check and local logs are preserved privately under `wl-modernization/evidence/smart-cache-advisory-resolution-699c2cf/`. Source behavior and released vendor payload remain unchanged; no commit, push, release or shared runtime/provider mutation occurred in this slice.
+
+## WPCS QA workaround — 2026-09-30
+
+The owning PHPCS ruleset now applies the upstream-supported mitigation for
+[GHSA-3pwp-g2mj-5p3v](https://github.com/WordPress/WordPress-Coding-Standards/security/advisories/GHSA-3pwp-g2mj-5p3v):
+exclude only `WordPress.WP.EnqueuedResourceParameters` from the inherited
+WordPress rules. The vulnerable WPCS 2.3.0 package remains locked, so the audit
+still reports nine advisories. This disables the affected source-evaluation path
+for this ruleset; it does not patch the package or protect callers using another
+ruleset. Qualify WPCS/VIP major upgrades before removing the workaround.
+
+An isolated install with the exact candidate lock and owning ruleset enumerated
+293 sniffs before and 292 after; the removed set is exactly the named sniff, with
+no additions or other removals. PHPCS still passes all 11 application files under
+PHP 8.4.11. The nine-package manifest/lock update passed independent metadata
+review. Focused independent review confirmed the exclusion preserves every other sniff,
+including the inherited VIP rules. Native PHP 8.2 CI remains pending. No runtime
+plugin code or the released 17-file vendor bundle changed.
