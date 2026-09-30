@@ -5,66 +5,19 @@ namespace WPGraphQL\SmartCache;
 use WPGraphQL\SmartCache\Cache\Results;
 
 /**
- * Test that authenticated requests are handled correctly by the object cache.
+ * Regression coverage for request-stable authenticated cache decisions.
  *
- * ## Background
+ * Older WPGraphQL request lifecycles could clear the WordPress current user
+ * after authenticated data had executed. Smart Cache therefore uses the
+ * request's AppContext viewer and excludes authenticated results from cache.
  *
- * This tests the caching behavior for authenticated vs unauthenticated requests.
- * The object cache should only store results from unauthenticated requests to ensure
- * that authenticated user data is not inadvertently served to public users.
+ * WPGraphQL 2.23.1 validates HTTP cookie authentication in Router before
+ * constructing the viewer. The acceptance suite supplies a genuine cookie
+ * and session-bound nonce; these unit tests isolate the cache decisions and
+ * retain protection if global user state changes after request construction.
  *
- * ## Request Execution Order in WPGraphQL\Request
- *
- * 1. Request is created, AppContext->viewer is set to current user (e.g., admin with ID 123)
- * 2. before_execute() runs - stores globals, handles batch setup (NO auth checks here!)
- * 3. Query executes, returning data based on admin's permissions (e.g., draft posts)
- * 4. after_execute() is called
- * 5. has_authentication_errors() is called which does:
- *    - Checks if nonce is present
- *    - If NO nonce: calls wp_set_current_user(0) to treat as unauthenticated
- *    - This has been the behavior since 2019 (see Request.php lines 355-361)
- * 6. after_execute_actions() runs (lines 420-427)
- * 7. 'graphql_return_response' action fires - THIS IS WHERE SMART CACHE SAVES TO CACHE
- *
- * ## The Challenge
- *
- * At step 7, if we check is_user_logged_in(), it returns FALSE because wp_set_current_user(0)
- * was called in step 5. But the query results from step 3 contain authenticated data!
- *
- * So we would:
- * - See is_user_logged_in() === false
- * - Think "this is an unauthenticated request, safe to cache"
- * - Cache authenticated data (draft posts, private content, etc.)
- * - Public users then get this cached authenticated data
- *
- * ## Historical Context
- *
- * The comment in WPGraphQL core at line 408-409 says "prevent execution" but
- * has_authentication_errors() runs in after_execute() - AFTER the query has already executed!
- *
- * GitHub Issue #38 (wp-graphql-jwt-authentication, July 2019)
- * discusses this exact problem - authentication errors should halt execution BEFORE
- * the query runs, not after. The issue suggests using the rest_authentication_errors
- * hook pattern to abort processing early. While the issue is closed it seems it might not be fully addressed.
- *
- * @see https://github.com/wp-graphql/wp-graphql-jwt-authentication/issues/38
- *
- * ## The Solution
- *
- * Instead of checking is_user_logged_in() (which changes mid-request), we check
- * AppContext->viewer which is set once at Request creation and never changes.
- *
- * - AppContext->viewer is set in Request constructor via WPGraphQL::get_app_context()
- * - This captures the REAL user at request start, before any nonce checks
- * - Even after wp_set_current_user(0) is called, AppContext->viewer still reflects
- *   the original authenticated user
- *
- * Additionally, we cache the result of is_object_cache_enabled() per-request to ensure
- * consistent behavior throughout the entire request lifecycle.
- *
- * @see vendor/wp-graphql/wp-graphql/src/Request.php lines 355-361 (wp_set_current_user(0))
- * @see vendor/wp-graphql/wp-graphql/src/Request.php lines 408-427 (execution order)
- * @see vendor/wp-graphql/wp-graphql/src/WPGraphQL.php line 950 (AppContext->viewer set)
+ * @see vendor/wp-graphql/wp-graphql/src/Router.php
+ * @see tests/acceptance/AuthenticatedRequestCacheCest.php
  */
 class AuthenticatedRequestCacheTest extends \Codeception\TestCase\WPTestCase {
 
@@ -166,9 +119,9 @@ class AuthenticatedRequestCacheTest extends \Codeception\TestCase\WPTestCase {
 	}
 
 	/**
-	 * Test the real-world scenario with draft posts.
+	 * Test the historical draft-post regression through in-process GraphQL.
 	 *
-	 * This test replicates the scenario:
+	 * This isolates the older lifecycle scenario, rather than current HTTP nonce handling:
 	 *
 	 * 1. Admin user is logged in (authenticated via WordPress session/cookie)
 	 * 2. Admin makes request: /graphql/?query={posts(where:{status:DRAFT}){nodes{title status}}}
@@ -366,7 +319,7 @@ class AuthenticatedRequestCacheTest extends \Codeception\TestCase\WPTestCase {
 		$filtered_headers = $results->add_no_cache_headers_for_authenticated_requests( $headers );
 
 		$this->assertArrayHasKey( 'Cache-Control', $filtered_headers, 'Cache-Control header should be set for authenticated requests' );
-		$this->assertEquals( 'no-store', $filtered_headers['Cache-Control'], 'Cache-Control should be no-store for authenticated requests' );
+		$this->assertEquals( 'no-store, no-cache, must-revalidate, max-age=0', $filtered_headers['Cache-Control'], 'Authenticated responses should retain the full private cache policy' );
 	}
 
 	/**

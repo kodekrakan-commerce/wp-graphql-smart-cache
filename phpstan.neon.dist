@@ -9,6 +9,9 @@ parameters:
         - phpstan/class-wp-dependency.stub
         - phpstan/class-wp-error.stub
         - phpstan/appsero.stub
+    scanFiles:
+        # WP-CLI functions are loaded by its runner, not its Composer autoloader.
+        - vendor/wp-cli/wp-cli/php/utils.php
     bootstrapFiles:
         - phpstan/constants.php
         - vendor/wp-graphql/wp-graphql/wp-graphql.php

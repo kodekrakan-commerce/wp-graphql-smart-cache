@@ -137,7 +137,7 @@ class CachedQueryTest extends \Codeception\TestCase\WPTestCase {
 				}
 			}
 		}";
-		$query_id = "foo-bar-query";
+		$query_id = hash( 'sha256', $query );
 
 		// Create/save persisted query for the query and query id
 		$saved_query = new Document();

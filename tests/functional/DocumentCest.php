@@ -16,7 +16,7 @@ class DocumentCest {
 		$I->wantTo( 'Save a graphql query containing a where clause and double quotes' );
 
 		$query = "{ posts(where: {tag: \"bees\"}) { nodes { id title uri content } } }";
-		$query_alias = 'test-save-query-alias';
+		$query_alias = hash( 'sha256', $query );
 
 		$I->dontSeeTermInDatabase( [ 'name' => 'graphql_query_alias' ] );
 		$I->sendPost('graphql', [
@@ -73,30 +73,20 @@ class DocumentCest {
 		$I->seePageNotFound();
 	}
 
-	public function saveQueryWithAliasNameSavesTest( FunctionalTester $I ) {
-		$I->wantTo( 'Save a graphql query with a query id/hash that does not match, saves as alias' );
-
+	public function saveQueryWithAnonymousAliasFailsTest( FunctionalTester $I ) {
+		$I->wantTo( 'Reject anonymous alias registration without persisting a document or term' );
 		$query = "{\n  __typename\n}\n";
-
-		// Make sure query hash we use doesn't match
 		$query_hash = hash( 'sha256', $query );
 		$query_alias = 'test-save-query-creates-alias';
-
-		$I->dontSeeTermInDatabase( [ 'name' => 'graphql_query_alias' ] );
-		$I->sendPost('graphql', [
-			'query' => $query,
-			'queryId' => $query_alias
+		$I->sendPost( 'graphql', [ 'query' => $query, 'queryId' => $query_alias ] );
+		$I->seeResponseContainsJson( [
+			'errors' => [ [
+				'message' => 'The provided queryId does not match the query hash. Alias names for saved GraphQL Documents can only be assigned by an authorized user.',
+			] ],
 		] );
-		$I->seeResponseContainsJson([
-			'data' => [
-				'__typename' => 'RootQuery'
-			]
-		]);
-		$I->seePostInDatabase( [
-			'post_name' => $query_hash,
-		] );
-		$I->seeTermInDatabase( [ 'name' => $query_hash ] );
-		$I->seeTermInDatabase( [ 'name' => $query_alias ] );
+		$I->dontSeePostInDatabase( [ 'post_type' => 'graphql_document' ] );
+		$I->dontSeeTermInDatabase( [ 'name' => $query_hash ] );
+		$I->dontSeeTermInDatabase( [ 'name' => $query_alias ] );
 	}
 
 	public function saveQueryWithInvalidIdFailsTest( FunctionalTester $I ) {
@@ -127,7 +117,7 @@ class DocumentCest {
 		$query = "{\n  __typename\n}\n";
 		$query_hash = hash( 'sha256', $query );
 
-		// Save this query with an hash for another valid query as alias
+		// Seed a pre-existing curated alias that happens to be another query hash.
 		$query_for_posts = "
 		{
 			posts {
@@ -137,6 +127,7 @@ class DocumentCest {
 			}
 		  }
 		";
+		$this->haveCuratedDocument( $I, $query_for_posts, $query_hash );
 		$I->sendPost('graphql', [
 			'query' => $query_for_posts,
 			'queryId' => $query_hash
@@ -185,9 +176,10 @@ class DocumentCest {
 			'post_name'    => 'foo-slug',
 		] );
 
-		// Save a query with an alias
+		// Seed a pre-existing curated alias; anonymous requests may reuse it, not assign it.
 		$query = "{ posts { nodes { __typename content } } }";
 		$query_alias = 'query_posts_with_content';
+		$this->haveCuratedDocument( $I, $query, $query_alias );
 
 		$I->sendPost('graphql', [
 			'query' => $query,
@@ -220,8 +212,26 @@ class DocumentCest {
 			]
 		]);
 
+		$I->sendGet( 'graphql', [ 'queryId' => $query_alias ] );
+		$I->seeResponseContainsJson( [ 'data' => [ 'posts' => [ 'nodes' => [ [ 'content' => "<p>foo bar. biz bang.</p>\n" ] ] ] ] ] );
+
 		// clean up
 		$I->dontHavePostInDatabase( [ 'post_title' => 'foo' ] );
 	}
 
+
+	/** Seed already curated data; authorization itself is covered by mutation/editor tests. */
+	private function haveCuratedDocument( FunctionalTester $I, string $query, string $alias ): void {
+		$normalized = \GraphQL\Language\Printer::doPrint( \GraphQL\Language\Parser::parse( $query ) );
+		$query_hash = hash( 'sha256', $normalized );
+		$I->havePostInDatabase( [
+			'post_type' => 'graphql_document',
+			'post_status' => 'publish',
+			'post_author' => $I->grabUserIdFromDatabase( getenv( 'TEST_SITE_ADMIN_USERNAME' ) ?: 'admin' ),
+			'post_name' => $query_hash,
+			'post_title' => 'A Persisted Query',
+			'post_content' => $normalized,
+			'tax_input' => [ 'graphql_query_alias' => [ $query_hash, $alias ] ],
+		] );
+	}
 }

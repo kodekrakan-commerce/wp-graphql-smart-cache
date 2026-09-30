@@ -145,7 +145,7 @@ class Results extends Query {
 		// Reset the cached is_object_cache_enabled value for each new request
 		// This ensures we re-evaluate based on the current request's auth state
 		$this->is_object_cache_enabled = null;
-		$this->is_cached = [];
+		$this->is_cached               = [];
 
 		// if caching is not enabled or the request is authenticated, bail early
 		// right now we're not supporting GraphQL cache for authenticated requests.
