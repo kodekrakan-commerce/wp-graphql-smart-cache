@@ -41,4 +41,19 @@ foreach (array(array('data' => null), array('invalid' => true), array('data' => 
         throw new \RuntimeException('Malformed or partial cached response survived');
     }
 }
-echo json_encode(array('transient_retry' => 'pass', 'healthy_cache_hit' => 'pass', 'legacy_error_eviction' => 'pass', 'malformed_partial_eviction' => 'pass', 'resolver_calls' => $calls)) . PHP_EOL;
+$header_cache = new class extends Results {
+    public function with_viewer($viewer) {
+        $this->request = (object) array('app_context' => (object) array('viewer' => $viewer));
+        return $this;
+    }
+};
+$authenticated = new class { public function exists() { return true; } };
+$anonymous = new class { public function exists() { return false; } };
+$headers = array('Cache-Control' => 'max-age=1800', 'Pragma' => 'no-cache', 'Vary' => 'Origin');
+$private = $header_cache->with_viewer($authenticated)->add_no_cache_headers_for_authenticated_requests($headers);
+if ($private['Cache-Control'] !== 'no-store, no-cache, must-revalidate, max-age=0'
+    || $private['Pragma'] !== $headers['Pragma'] || $private['Vary'] !== $headers['Vary']
+    || $header_cache->with_viewer($anonymous)->add_no_cache_headers_for_authenticated_requests($headers) !== $headers) {
+    throw new \RuntimeException('Authenticated network policy was shortened or unrelated headers changed');
+}
+echo json_encode(array('transient_retry' => 'pass', 'healthy_cache_hit' => 'pass', 'legacy_error_eviction' => 'pass', 'malformed_partial_eviction' => 'pass', 'authenticated_network_policy' => 'pass', 'resolver_calls' => $calls)) . PHP_EOL;

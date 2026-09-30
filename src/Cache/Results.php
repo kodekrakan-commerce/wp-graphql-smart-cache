@@ -64,7 +64,7 @@ class Results extends Query {
 		// Use the viewer from AppContext, which is set at Request creation
 		// and doesn't change even if wp_set_current_user(0) is called later
 		if ( $this->request && $this->request->app_context->viewer->exists() ) {
-			$headers['Cache-Control'] = 'no-store';
+			$headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0';
 		}
 
 		return $headers;
